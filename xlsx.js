@@ -140,6 +140,9 @@ var table_fmt = {
 	48: '##0.0E+0',
 	49: '@',
 	56: '"上午/下午 "hh"時"mm"分"ss"秒 "',
+	59: '[$€-2] 0.00',
+	60: 'dd.mm.yy',
+	61: 'dd.mm.yy hh:mm',
 	65535: 'General'
 };
 var days = [
@@ -4699,7 +4702,7 @@ function parse_numFmts(t, opts) {
 
 function write_numFmts(NF, opts) {
 	var o = ["<numFmts>"];
-	[[5,8],[23,26],[41,44],[63,66],[164,392]].forEach(function(r) {
+	[[5,8],[23,26],[41,44],[59,66],[164,392]].forEach(function(r) {
 		for(var i = r[0]; i <= r[1]; ++i) if(NF[i] !== undefined) o[o.length] = (writextag('numFmt',null,{numFmtId:i,formatCode:escapexml(NF[i])}));
 	});
 	if(o.length === 1) return "";

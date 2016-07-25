@@ -7551,8 +7551,104 @@ function write_ws_xml(idx, opts, wb) {
 	var s = wb.SheetNames[idx], sidx = 0, rdata = "";
 	var ws = wb.Sheets[s];
 	if(ws === undefined) ws = {};
+
+	var filter = ws['!filter'];
+
+	if (filter !== undefined) {
+		o[o.length] = writextag(
+			'sheetPr',
+			writextag('pageSetUpPr', null, {fitToPage: 'false'}),
+			{ filterMode: 'false' }
+		);
+	}
+
 	var ref = ws['!ref']; if(ref === undefined) ref = 'A1';
 	o[o.length] = (writextag('dimension', null, {'ref': ref}));
+
+	var viewSplit = ws['!split']; if (viewSplit === undefined) viewSplit = '0:0';
+	viewSplit = viewSplit.split(':');
+
+	if (viewSplit.length !== 2) {
+		viewSplit = [0,0];
+	}
+
+	var activePane = 'topLeft';
+	var topLeftCell = 'A1';
+
+	var viewSelection = writextag('selection', null, {
+		'pane': 'topLeft',
+		'activeCell': 'A1',
+		'activeCellId': '0',
+		'sqref': 'A1',
+	});
+
+	if (viewSplit[0] > 0) {
+		activePane = 'topRight';
+		topLeftCell =  encode_col(viewSplit[0]) + '1';
+
+		viewSelection += writextag('selection', null, {
+			'pane': activePane,
+			'activeCell': topLeftCell,
+			'activeCellId': '0',
+			'sqref': topLeftCell,
+		});
+	}
+
+	if (viewSplit[1] > 0) {
+
+		activePane = 'bottomLeft';
+		topLeftCell = 'A' + (parseInt(viewSplit[1]) + 1);
+
+		viewSelection += writextag('selection', null, {
+			'pane': activePane,
+			'activeCell': topLeftCell,
+			'activeCellId': '0',
+			'sqref': topLeftCell,
+		});
+
+		if (viewSplit[0] > 0) {
+			activePane = 'bottomRight';
+			topLeftCell = encode_col(viewSplit[0]) + (parseInt(viewSplit[1]) + 1);
+
+			viewSelection += writextag('selection', null, {
+				'pane': activePane,
+				'activeCell': topLeftCell,
+				'activeCellId': '0',
+				'sqref': topLeftCell,
+			});
+
+		}
+	}
+
+	var viewPane = writextag('pane', null, {
+		'xSplit': viewSplit[0],
+		'ySplit': viewSplit[1],
+		'topLeftCell': topLeftCell,
+		'activePane': activePane,
+		'state': 'frozen',
+	});
+
+	var sheetView = writextag('sheetView', viewPane + viewSelection, {
+		'windowProtection': 'true',
+		'showFormulas': 'false',
+		'showGridLines': 'true',
+		'showRowColHeaders': 'true',
+		'showZeros': 'true',
+		'rightToLeft': 'false',
+		'tabSelected': 'true',
+		'showOutlineSymbols': 'true',
+		'defaultGridColor': 'true',
+		'view': 'normal',
+		'topLeftCell': 'A1',
+		'colorId': '64',
+		'zoomScale': '100',
+		'zoomScaleNormal': '100',
+		'zoomScalePageLayoutView': '100',
+		'workbookViewId': '0',
+	});
+
+	o[o.length] = writextag('sheetViews', sheetView);
+
 
 	if(ws['!cols'] !== undefined && ws['!cols'].length > 0) o[o.length] = (write_ws_xml_cols(ws, ws['!cols']));
 	o[sidx = o.length] = '<sheetData/>';
@@ -7561,6 +7657,14 @@ function write_ws_xml(idx, opts, wb) {
 		if(rdata.length > 0) o[o.length] = (rdata);
 	}
 	if(o.length>sidx+1) { o[o.length] = ('</sheetData>'); o[sidx]=o[sidx].replace("/>",">"); }
+
+	if(filter !== undefined) {
+		o[o.length] = writextag('autoFilter', null, {
+			ref: filter,
+		})
+	}
+
+	o[o.length] = writextag('drawing', null, { 'r:id': 'rId' + (idx + 1) });
 
 	if(ws['!merges'] !== undefined && ws['!merges'].length > 0) o[o.length] = (write_ws_xml_merges(ws['!merges']));
 
@@ -8235,6 +8339,7 @@ function safe1904(wb) {
 }
 
 function write_wb_xml(wb, opts) {
+
 	var o = [XML_HEADER];
 	o[o.length] = WB_XML_ROOT;
 	o[o.length] = (writextag('workbookPr', null, {date1904:safe1904(wb)}));
@@ -8242,6 +8347,22 @@ function write_wb_xml(wb, opts) {
 	for(var i = 0; i != wb.SheetNames.length; ++i)
 		o[o.length] = (writextag('sheet',null,{name:wb.SheetNames[i].substr(0,31), sheetId:""+(i+1), "r:id":"rId"+(i+1)}));
 	o[o.length] = "</sheets>";
+
+	o[o.length] = '<definedNames>';
+	for (var i = 0; i < wb.SheetNames.length; i++) {
+		ws = wb.Sheets[wb.SheetNames[i]];
+		o[o.length] = writextag('definedName', wb.SheetNames[i].substr(0,31) + '!' + ws['!filter'], {
+			'function': 'false',
+			'hidden': 'true',
+			'localSheetId': '0',
+			'name': '_xlnm._FilterDatabase',
+			'vbProcedure': 'false',
+		});
+	}
+	o[o.length] = '</definedNames>';
+
+
+
 	if(o.length>2){ o[o.length] = '</workbook>'; o[1]=o[1].replace("/>",">"); }
 	return o.join("");
 }

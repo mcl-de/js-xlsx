@@ -7383,6 +7383,11 @@ function write_ws_xml_cols(ws, cols) {
 		if(col.wpx) width = px2char(col.wpx);
 		else if(col.wch) width = col.wch;
 		if(width > -1) { p.width = char2width(width); p.customWidth= 1; }
+
+		/* hidden */
+		if (col.hidden) p.hidden = 'true';
+		else            p.hidden = 'false';
+
 		o[o.length] = (writextag('col', null, p));
 	}
 	o[o.length] = "</cols>";

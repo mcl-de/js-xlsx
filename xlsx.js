@@ -7669,8 +7669,6 @@ function write_ws_xml(idx, opts, wb) {
 		})
 	}
 
-	o[o.length] = writextag('drawing', null, { 'r:id': 'rId' + (idx + 1) });
-
 	if(ws['!merges'] !== undefined && ws['!merges'].length > 0) o[o.length] = (write_ws_xml_merges(ws['!merges']));
 
 	if(o.length>2) { o[o.length] = ('</worksheet>'); o[1]=o[1].replace("/>",">"); }

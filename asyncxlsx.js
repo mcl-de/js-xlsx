@@ -1,11 +1,11 @@
 xlsx = require('./xlsx');
 
-let worker = new Worker('/node_modules/xlsx/worker.js');
+let xlsxWorker = new Worker('/node_modules/xlsx/worker.js');
 let xlsxWorkerIds = 0;
 let xlsxWorkerCallbacks = {};
 
 
-worker.onmessage = (msg) => {
+xlsxWorker.onmessage = (msg) => {
 	let data = msg.data;
 	if (xlsxWorkerCallbacks[data.id]) {
 		xlsxWorkerCallbacks[data.id](data.success, data.payload);
@@ -15,7 +15,7 @@ worker.onmessage = (msg) => {
 
 function doWork(name, data) {
 	let xlsxWorkerId = xlsxWorkerIds++;
-	worker.postMessage({
+	xlsxWorker.postMessage({
 		id: xlsxWorkerId,
 		payload: {
 			name: name,

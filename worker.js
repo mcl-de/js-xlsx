@@ -1,4 +1,4 @@
-out = self.importScripts('./dist/xlsx.full.min.js');
+self.importScripts('./dist/xlsx.full.min.js');
 
 function sendAnswer(id, success, payload) {
 	self.postMessage({
@@ -9,8 +9,8 @@ function sendAnswer(id, success, payload) {
 }
 
 self.onmessage = (msg) => {
-	let data = msg.data;
-	let result;
+	var data = msg.data;
+	var result;
 
 	switch (data.payload.name) {
 		case 'write':

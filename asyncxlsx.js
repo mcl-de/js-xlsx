@@ -5,7 +5,7 @@ var xlsxWorkerIds = 0;
 var xlsxWorkerCallbacks = {};
 
 
-xlsxWorker.onmessage = (msg) => {
+xlsxWorker.onmessage = function(msg) {
 	var data = msg.data;
 	if (xlsxWorkerCallbacks[data.id]) {
 		xlsxWorkerCallbacks[data.id](data.success, data.payload);
@@ -23,8 +23,8 @@ function doWork(name, data) {
 		},
 	});
 
-	return new Promise((resolve, reject) => {
-		xlsxWorkerCallbacks[xlsxWorkerId] = (success, payload) => {
+	return new Promise(function(resolve, reject) {
+		xlsxWorkerCallbacks[xlsxWorkerId] = function(success, payload) {
 			if (success) {
 				return resolve(payload);
 			}
@@ -35,5 +35,5 @@ function doWork(name, data) {
 	});
 }
 
-exports.write = (wb, opts) => doWork('write', [ wb, opts ]);
+exports.write = function(wb, opts) { doWork('write', [ wb, opts ]); };
 exports.utils = xlsx.utils;

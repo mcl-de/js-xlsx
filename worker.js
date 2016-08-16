@@ -8,7 +8,7 @@ function sendAnswer(id, success, payload) {
 	});
 }
 
-self.onmessage = (msg) => {
+self.onmessage = function(msg) {
 	var data = msg.data;
 	var result;
 

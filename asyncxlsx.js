@@ -35,5 +35,5 @@ function doWork(name, data) {
 	});
 }
 
-exports.write = function(wb, opts) { doWork('write', [ wb, opts ]); };
+exports.write = function(wb, opts) { return doWork('write', [ wb, opts ]); };
 exports.utils = xlsx.utils;
